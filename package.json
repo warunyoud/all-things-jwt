@@ -1,6 +1,19 @@
 {
+  "private": true,
   "name": "all-things-jwt",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "backend": "yarn workspace frontend start",
+    "frontend": "yarn workspace backend dev",
+    "start": "concurrently --kill-others-on-fail \"yarn backend\"  \"yarn frontend\""
+  },
+  "dependencies": {
+    "concurrently": "^7.6.0"
+  }
 }
