@@ -5,13 +5,13 @@ import * as jose from 'jose';
 import { BASE_URL } from '../utils/env';
 
 const HomePageContainer = styled.div`
-  margin: 32px;
+  margin: 64px 128px;
   display: float;
   justify-content: space-between;
 `;
 
 const HomePagePanel = styled.div`
-  width: 40vw;
+  width: 38vw;
 `;
 
 const HomePageText = styled.p`
@@ -21,11 +21,52 @@ const HomePageText = styled.p`
 const IsValidText = styled.span<{ valid?: boolean }>`
   font-size: 18px;
   font-weight: bold;
-  color: ${props => props.valid !== undefined ? (props.valid ? 'green' : 'red') : 'gray'};
+  color: ${props => props.valid !== undefined ? (props.valid ? 'chartreuse' : 'orangered') : 'gray'};
+`;
+
+const LogoutButton = styled.button`
+  width: 120px;
+  padding: 16px;
+
+  cursor: pointer;
+
+  border: none;
+  border-radius: 8px;
+
+
+  background: gray;
+  color: rgba(255, 255, 255, 0.8);
+
+  transition: all 1s;
+`;
+
+const CheckButton = styled.button`
+  width: 120px;
+
+  cursor: pointer;
+
+  border: none;
+  border-radius: 0px 8px 8px 0px;
+
+
+  background: steelblue;
+  color: rgba(255, 255, 255, 0.8);
+
+  transition: all 1s;
+  height: 100%;
+`;
+
+const SecretInput = styled.input`
+  padding: 0;
+  padding-left: 10px;
+  border-radius: 8px 0px 0px 8px;
+  height: 100%;
+  border-width: 0;
 `;
 
 const SecretContainer = styled.div`
-  display:float;
+  display: float;
+  height: 48px;
 `;
 
 
@@ -90,6 +131,7 @@ const JWTInfo: React.FC<JWTInfoProps>= (props) => {
   );
 };
 
+
 export const HomePage = () => {
   const { token, encryptPayload, signingType, user } = useLoaderData() as { 
     token: string;
@@ -141,10 +183,10 @@ export const HomePage = () => {
       <HomePagePanel>
         <h1>/me</h1>
         <HomePageText>{stringifyUser}</HomePageText>
-        <button onClick={() => submit({}, {
+        <LogoutButton onClick={() => submit({}, {
           method: 'post',
           action: '/logout',
-        })}>log out</button>
+        })}>LOG OUT</LogoutButton>
       </HomePagePanel>
       <HomePagePanel>
         <h1>Token</h1>
@@ -153,8 +195,8 @@ export const HomePage = () => {
         {
           signingType === 'symmetric' ?
           <SecretContainer>
-            <input onChange={event => setSecret(event.target.value)} placeholder='secret'/>
-            <button onClick={checkAgainstSecret}>{encryptPayload ? 'decrypt' : 'check'}</button>
+            <SecretInput onChange={event => setSecret(event.target.value)} placeholder='Secret'/>
+            <CheckButton onClick={checkAgainstSecret}>{encryptPayload ? 'DECRYPT' : 'CHECK'}</CheckButton>
           </SecretContainer> : <a href={`${BASE_URL}/jwks`}>View JWKs</a>
         }
         {
