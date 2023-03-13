@@ -9,7 +9,6 @@ import axios from 'axios';
 import { BASE_URL } from './utils/env';
 
 const ACCESS_TOKEN_KEY = 'access_token';
-const ENCRYPT_PAYLOAD_KEY = 'encrypt_payload';
 const SIGNING_TYPE_KEY = 'signing_type';
 
 const router = createBrowserRouter([
@@ -18,7 +17,6 @@ const router = createBrowserRouter([
     element: <HomePage/>,
     loader: async () => {
       const token = localStorage.getItem(ACCESS_TOKEN_KEY);
-      const encryptPayload = localStorage.getItem(ENCRYPT_PAYLOAD_KEY);
       const signingType = localStorage.getItem(SIGNING_TYPE_KEY);
       if (!token) {
         return redirect('/login');
@@ -26,10 +24,10 @@ const router = createBrowserRouter([
       try {
         const response = await axios.get<{ user: any }>(`${BASE_URL}/me`, { 
           headers: { Authorization: `Bearer ${token}` },
-          params: { encryptPayload, signingType },
+          params: { signingType },
         });
         const { user } = response.data;
-        return { token, encryptPayload: encryptPayload === 'true', user, signingType };
+        return { token, user, signingType };
       } catch (error) {
         console.error(error);
         localStorage.clear();
@@ -51,14 +49,12 @@ const router = createBrowserRouter([
       let formData = await request.formData();
       const username = formData.get('username');
       const password = formData.get('password');
-      const encryptPayload = formData.get('encryptPayload');
       const signingType = formData.get('signingType');
       try {
         const response = await axios.post<{ access_token: string }>(`${BASE_URL}/login`, { username, password }, {
-          params: { encryptPayload, signingType },
+          params: { signingType },
         });
         localStorage.setItem(ACCESS_TOKEN_KEY, response.data.access_token);
-        localStorage.setItem(ENCRYPT_PAYLOAD_KEY, encryptPayload!.toString());
         localStorage.setItem(SIGNING_TYPE_KEY, signingType!.toString());
         return redirect('/');
       } catch (error) {

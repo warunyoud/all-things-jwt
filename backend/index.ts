@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-import { createJWE, createJWT, generateKeys, getJWKs, getUserFromRequest } from './utils/token';
+import { createJWT, generateKeys, getJWKs, getUserFromRequest } from './utils/token';
 import { isMyError } from './errors';
 
 const app = express();
@@ -40,15 +40,11 @@ generateKeys().then(() => {
   app.use(express.json());
   
   app.post('/login', async (req, res, next) => {
-    const { encryptPayload, signingType } = req.query;
+    const { signingType } = req.query;
     const { username, password } = req.body;
     const isJWK = signingType === 'asymmetric';
     try {
-      if (encryptPayload === 'true') {
-        res.json({ access_token: await createJWE({ username }, isJWK) });
-      } else {
-        res.json({ access_token: await createJWT({ username }, isJWK) });
-      }
+      res.json({ access_token: await createJWT({ username }, isJWK) });
     } catch (error) {
       next(error);
     }
@@ -79,5 +75,4 @@ generateKeys().then(() => {
   app.listen(port, () => {
     console.log(`JWT demo server listening on port ${port}`);
   });
-
 });

@@ -75,13 +75,12 @@ const LoginSubmit = styled.button`
 export const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [encryptPayload, setEncryptPayload] = useState('false');
   const [signingType, setSigningType] = useState('symmetric');
 
   const submit = useSubmit();
 
   const submitCredentials = () => {
-    submit({ username, password, encryptPayload, signingType }, {
+    submit({ username, password, signingType }, {
       method: 'post',
       action: '/login',
     });
@@ -94,11 +93,6 @@ export const LoginPage = () => {
       <Input placeholder='Username that goes on the token' value={username} onChange={event => setUsername(event.target.value)}/>
       <InputLabel>PASSWORD</InputLabel>
       <Input placeholder='Anything cause it will be ignored anyway' type='password' value={password} onChange={event => setPassword(event.target.value)}/>
-      <InputLabel>ENCRYPT PAYLOAD</InputLabel>
-      <Select value={encryptPayload} onChange={event => setEncryptPayload(event.target.value)}>
-        <option value='false'>no</option>
-        <option value='true'>yes</option>
-      </Select>
       <InputLabel>SIGNING TYPE</InputLabel>
       <Select value={signingType} onChange={event => setSigningType(event.target.value)}>
         <option value='symmetric'>symmetric</option>

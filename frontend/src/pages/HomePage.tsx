@@ -75,36 +75,6 @@ const decrypt64Url = (base64Url: string) => {
   return window.atob(base64);
 };
 
-interface JWEInfoProps {
-  token: string;
-  decryptedPayload?: string;
-};
-
-const JWEInfo: React.FC<JWEInfoProps>= (props) => {
-  const { token, decryptedPayload } = props;
-  const [tokenHeader, encryptedCipherText] = useMemo(() => {
-    const [encodedHeaders, _encodedEncryptionKey, _encryptedIV, encryptedCipherText] = token.split('.');
-    const tokenHeader = decrypt64Url(encodedHeaders);
-    return [tokenHeader, encryptedCipherText];
-  }, [token]);
-  return (
-    <>
-      <h2>Decoded</h2>
-      <h3>Header</h3>
-      <HomePageText>{tokenHeader}</HomePageText>
-      {
-        decryptedPayload ?
-        <>
-          <h3>Payload</h3>
-          <HomePageText>{decryptedPayload}</HomePageText>
-        </> : null
-      }
-      <h3>Cipher Text</h3>
-      <HomePageText>{encryptedCipherText}</HomePageText>
-    </>
-  );
-};
-
 interface JWTInfoProps {
   token: string;
 };
@@ -142,7 +112,6 @@ export const HomePage = () => {
 
   const [valid, setValid] = useState<boolean>();
   const [secret, setSecret] = useState('');
-  const [decryptedPayload, setDecryptedPayload] = useState<string>();
 
   const submit = useSubmit();
 
@@ -163,18 +132,11 @@ export const HomePage = () => {
   const checkAgainstSecret = async () => {
     try {
       const decodedSecret = jose.base64url.decode(secret);
-      if (encryptPayload) {
-        const result = await jose.jwtDecrypt(token, decodedSecret);
-        setDecryptedPayload(JSON.stringify(result.payload));
-        setValid(true);
-      } else {
-        await jose.jwtVerify(token, decodedSecret);
-        setValid(true);
-      }
+      await jose.jwtVerify(token, decodedSecret);
+      setValid(true);
     } catch (error) {
       console.error(error);
       setValid(false);
-      setDecryptedPayload(undefined);
     }
   };
 
@@ -196,14 +158,10 @@ export const HomePage = () => {
           signingType === 'symmetric' ?
           <SecretContainer>
             <SecretInput onChange={event => setSecret(event.target.value)} placeholder='Secret'/>
-            <CheckButton onClick={checkAgainstSecret}>{encryptPayload ? 'DECRYPT' : 'CHECK'}</CheckButton>
+            <CheckButton onClick={checkAgainstSecret}>{'CHECK'}</CheckButton>
           </SecretContainer> : <a href={`${BASE_URL}/jwks`}>View JWKs</a>
         }
-        {
-          encryptPayload ?
-          <JWEInfo token={token} decryptedPayload={decryptedPayload}/>
-          : <JWTInfo token={token}/>
-        }
+        <JWTInfo token={token}/>
       </HomePagePanel>
     </HomePageContainer>
   )
