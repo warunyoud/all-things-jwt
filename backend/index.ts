@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-import { createJWT, generateKeys, getJWKs, getUserFromRequest } from './utils/token';
+import { createJWT, createJWTAndSignWithJWK, generateKeys, getJWKs, getUserFromRequest } from './utils/token';
 import { isMyError } from './errors';
 
 const app = express();
@@ -43,8 +43,10 @@ generateKeys().then(() => {
     const { signingType } = req.query;
     const { username, password } = req.body;
     const isJWK = signingType === 'asymmetric';
+    const payload = { username };
     try {
-      res.json({ access_token: await createJWT({ username }, isJWK) });
+      const jwt = isJWK ? await createJWTAndSignWithJWK(payload) : await createJWT(payload);
+      res.json({ access_token: jwt });
     } catch (error) {
       next(error);
     }

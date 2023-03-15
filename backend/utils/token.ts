@@ -13,6 +13,7 @@ let publicJwks: jose.JWK[] = [];
 
 const ISSUER = 'urn:example:issuer';
 const AUDIENCE = 'urn:example:audience';
+const JWK_ALG = 'PS256';
 
 export const generateKeys = async () => {
   const { publicKey, privateKey } = await jose.generateKeyPair('RS256');
@@ -29,23 +30,29 @@ export const getJWKs = () => {
   return publicJwks;
 };
 
-export const createJWT = async (payload: any, isJWK: boolean) => {
-  const alg = isJWK ? 'PS256' : 'HS256';
+export const createJWTAndSignWithJWK = async (payload: any) => {
   const privateJwk = privateJwks[0];
-  const unsignedJWT = new jose.SignJWT(payload)
-  .setProtectedHeader({ alg, kid: isJWK ? privateJwk.kid : undefined })
-  .setIssuedAt()
-  .setIssuer(ISSUER)
-  .setAudience(AUDIENCE)
-  .setExpirationTime('2h');
-  
-  let jwt: string;
-  if (isJWK) {
-    const privateKey = await jose.importJWK(privateJwk, alg);
-    jwt = await unsignedJWT.sign(privateKey);
-  } else {
-    jwt = await unsignedJWT.sign(secret);
-  } 
+  const privateKey = await jose.importJWK(privateJwk, JWK_ALG);
+  const jwt = await new jose.SignJWT(payload)
+    .setProtectedHeader({ alg: JWK_ALG, kid: privateJwk.kid })
+    .setIssuedAt()
+    .setIssuer(ISSUER)
+    .setAudience(AUDIENCE)
+    .setExpirationTime('2h')
+    .sign(privateKey);
+
+  return jwt;
+}
+
+export const createJWT = async (payload: any) => {
+  const jwt = await new jose.SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setIssuer(ISSUER)
+    .setAudience(AUDIENCE)
+    .setExpirationTime('2h')
+    .sign(secret);
+
   return jwt;
 };
 
